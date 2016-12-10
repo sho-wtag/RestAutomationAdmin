@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="monthly_sales_report" pageWidth="595" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="2ab7c3b7-b2bf-4ab1-a43b-fef7e5f4b1e6">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="100"/>
+	<parameter name="startDate" class="java.lang.String"/>
+	<parameter name="endDate" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT YEAR(od.created_on) YEAR, MONTH(od.created_on) MONTH,MONTHNAME(od.created_on) MONTHNAME,
+dc.name categoryName,d.name dishName, d.price price, SUM(od.quantity) quantity,SUM((od.quantity*d.price)) dishBill
+
+FROM dish d, dish_category dc, order_detail od
+WHERE d.category_id = dc.id
+AND od.dish_id = d.id
+AND DATE(od.created_on) >= DATE($P{startDate}) AND DATE(od.created_on) <= DATE($P{endDate} )
+GROUP BY d.id,YEAR(od.created_on), MONTH(od.created_on)
+ORDER BY YEAR(od.created_on), MONTH(od.created_on),dc.name ASC]]>
+	</queryString>
+	<field name="YEAR" class="java.lang.Integer"/>
+	<field name="MONTH" class="java.lang.Integer"/>
+	<field name="MONTHNAME" class="java.lang.String"/>
+	<field name="categoryName" class="java.lang.String"/>
+	<field name="dishName" class="java.lang.String"/>
+	<field name="price" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="quantity" class="java.lang.Double">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="dishBill" class="java.lang.Double"/>
+	<variable name="YearMonthTotal" class="java.lang.Double" resetType="Group" resetGroup="YearMonthGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{dishBill}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="reportTotal" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{dishBill}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="categoryTotal" class="java.lang.Double" resetType="Group" resetGroup="CategoryGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{dishBill}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="yearTotal" class="java.lang.Double" resetType="Group" resetGroup="YearGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{dishBill}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<group name="YearGroup">
+		<groupExpression><![CDATA[$F{YEAR}]]></groupExpression>
+		<groupFooter>
+			<band height="50">
+				<staticText>
+					<reportElement uuid="1b2c6dc2-c452-4793-8290-4174cf744c72" x="345" y="30" width="100" height="20"/>
+					<textElement textAlignment="Right">
+						<font size="15"/>
+					</textElement>
+					<text><![CDATA[Year Total :]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement uuid="e6d58e38-6c3c-4927-8899-b13fc444d535" x="445" y="30" width="110" height="20"/>
+					<textElement textAlignment="Center">
+						<font size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{yearTotal}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="YearMonthGroup" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{YEAR}+"-"+$F{MONTH}]]></groupExpression>
+		<groupHeader>
+			<band height="33">
+				<textField isBlankWhenNull="true">
+					<reportElement uuid="7444b423-694d-4310-a70d-ef7c9157d158" mode="Opaque" x="0" y="0" width="555" height="33" forecolor="#006699" backcolor="#E6E6E6"/>
+					<textElement>
+						<font size="24" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{MONTHNAME}+" - "+$F{YEAR}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement uuid="cb77fdd9-4e29-4606-9fb4-fefbbbe2aa7d" x="-20" y="32" width="595" height="1" forecolor="#666666"/>
+				</line>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="20">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement uuid="4a2baabf-7569-4098-99d6-c83bac00cdf0" x="445" y="0" width="110" height="20"/>
+					<textElement textAlignment="Center">
+						<font size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{YearMonthTotal}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement uuid="d95ea0f3-957f-48c3-bdba-12b484184b27" x="345" y="0" width="100" height="20"/>
+					<textElement textAlignment="Right">
+						<font size="15"/>
+					</textElement>
+					<text><![CDATA[Month Total :]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="CategoryGroup">
+		<groupExpression><![CDATA[$F{categoryName}]]></groupExpression>
+		<groupHeader>
+			<band height="20">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement uuid="3e442aa2-d854-46d9-8bf9-d406d78f0657" mode="Opaque" x="1" y="0" width="228" height="20" backcolor="#E6E6E6"/>
+					<textElement>
+						<font size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{categoryName}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="20">
+				<textField isStretchWithOverflow="true">
+					<reportElement uuid="ec12cfa8-5159-433b-8661-01cb05211c70" mode="Transparent" x="229" y="0" width="216" height="20"/>
+					<textElement textAlignment="Right">
+						<font size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Category Total : "]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement uuid="ed8689a9-54f3-4134-9a11-c3843652dd5e" x="445" y="0" width="110" height="20"/>
+					<textElement textAlignment="Center">
+						<font size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{categoryTotal}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="72">
+			<frame>
+				<reportElement uuid="d86c3cc8-f4d6-476d-8ec3-b6462dab5bbb" mode="Opaque" x="-20" y="-20" width="595" height="92" backcolor="#006699"/>
+				<staticText>
+					<reportElement uuid="66cd2a73-3a95-4899-9a0b-f199f8b81945" x="20" y="20" width="234" height="43" forecolor="#FFFFFF"/>
+					<textElement>
+						<font size="34" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Restaurant]]></text>
+				</staticText>
+				<staticText>
+					<reportElement uuid="a9d5079e-e0a2-442f-9012-25fa7f463721" x="395" y="43" width="180" height="20" forecolor="#FFFFFF"/>
+					<textElement textAlignment="Right">
+						<font size="14" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Monthly Sales Report]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="13"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="21">
+			<staticText>
+				<reportElement uuid="8fb45aa1-a862-44e1-8650-ed5a2ddfc296" mode="Opaque" x="0" y="0" width="228" height="20" forecolor="#006699" backcolor="#E6E6E6"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Name]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="fa90734e-7171-41c8-ae39-bf1a9d62647d" x="-20" y="20" width="595" height="1" forecolor="#666666"/>
+			</line>
+			<staticText>
+				<reportElement uuid="3c99e580-85fe-40af-979f-6705254b20a4" mode="Opaque" x="228" y="1" width="107" height="20" forecolor="#006699" backcolor="#E6E6E6"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Price Per Unit]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="8468baf6-1a2f-4aee-b66a-7d75318dedc6" mode="Opaque" x="335" y="1" width="110" height="20" forecolor="#006699" backcolor="#E6E6E6"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Sold Quantity]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="dfa38753-40ae-4f11-9066-385b5a744fc0" mode="Opaque" x="445" y="1" width="110" height="20" forecolor="#006699" backcolor="#E6E6E6"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="59e6dbba-639f-4fea-9480-4726040957de" x="0" y="0" width="228" height="20"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dishName}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="9aedc033-64bf-46f5-a4ac-25105e4d89e5" positionType="FixRelativeToBottom" x="0" y="19" width="555" height="1"/>
+			</line>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="7c5cd9ea-fe69-4433-ae0f-a26162787ce7" x="228" y="0" width="107" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{price}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="cf64e052-1524-45d3-b09f-74b90fd5cb97" x="335" y="0" width="110" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement uuid="85c20129-863c-4516-8b52-da07b8ccc808" x="445" y="0" width="110" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dishBill}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="17">
+			<textField>
+				<reportElement uuid="f75e5196-4628-4618-8271-805b610f209c" mode="Opaque" x="0" y="4" width="515" height="13" backcolor="#E6E6E6"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement uuid="125d2bfb-97a9-4933-9851-bea3d10dcf51" mode="Opaque" x="515" y="4" width="40" height="13" backcolor="#E6E6E6"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement uuid="6af2fc72-d3c7-4bb7-802e-1a3898fd08bb" x="0" y="4" width="100" height="13"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="69">
+			<staticText>
+				<reportElement uuid="774197b8-8855-4b75-ab7a-8b6a50b4bd0f" x="345" y="49" width="100" height="20"/>
+				<textElement textAlignment="Right">
+					<font size="15"/>
+				</textElement>
+				<text><![CDATA[Grand Total :]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement uuid="d2d8b314-5993-4ddc-b302-5d7c36f84c8d" x="445" y="49" width="110" height="20"/>
+				<textElement textAlignment="Center">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{reportTotal}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+	<noData>
+		<band height="50">
+			<staticText>
+				<reportElement uuid="02fff3b5-138d-485c-abe8-41d9d89f1954" mode="Opaque" x="0" y="10" width="555" height="32" forecolor="#006699" backcolor="#E6E6E6"/>
+				<textElement textAlignment="Center" markup="none">
+					<font size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[No Data Found]]></text>
+			</staticText>
+		</band>
+	</noData>
+</jasperReport>
